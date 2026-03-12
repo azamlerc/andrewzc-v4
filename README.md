@@ -92,6 +92,45 @@ For CSV, use dot-notation headers for nested fields (`props.year`, `icons.0`).
 JSON can be an array or a key→entity object (legacy andrewzc.net format).
 The `key` field must NOT be present — it is computed from `name`/`reference`/`country`.
 
+### Images
+
+```bash
+node andrewzc.js image upload <list> <key> <file...>
+```
+
+Uploads one or more local images to the website image bucket using the API's
+presigned upload flow. The CLI logs into the API, allocates the next numbered
+filenames for the entity, converts each source image to JPEG, generates a
+square `600x600` thumbnail, uploads both, then calls the API to append the
+filenames to the entity's `images` array.
+
+Examples:
+
+```bash
+node andrewzc.js image upload hamburgers bareburger image.heic
+node andrewzc.js image upload hamburgers bareburger IMG_1234.HEIC IMG_1235.HEIC
+node andrewzc.js image upload hamburgers bareburger IMG_*.HEIC
+```
+
+Globs are practical and supported. In normal shell usage, `zsh` expands
+wildcards before invoking the script. The command also expands glob patterns
+itself, so quoted patterns work too.
+
+Add these variables to `.env`:
+
+```bash
+ANDREWZC_API_BASE=https://api.andrewzc.net
+ANDREWZC_ADMIN_SESSION=...
+```
+
+`ANDREWZC_ADMIN_SESSION` should be the raw value of the `admin_session` cookie
+from `api.andrewzc.net`. If you prefer, the command can still fall back to:
+
+```bash
+ANDREWZC_ADMIN_USERNAME=...
+ANDREWZC_ADMIN_PASSWORD=...
+```
+
 ## Architecture
 
 ```
@@ -118,6 +157,7 @@ andrewzc-v4/
     stats-completion.js
     stats-links.js
     upsert.js
+    image-upload.js
 ```
 
 ### Shared code with andrewzc-api

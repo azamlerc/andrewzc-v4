@@ -38,6 +38,9 @@ const COMMANDS = {
 
   // ── Upsert ───────────────────────────────────────────────────────────────────
   "upsert":               { args: "<file.csv|json> [list]", desc: "Upsert entities from a file with full enrichment" },
+
+  // ── Images ───────────────────────────────────────────────────────────────────
+  "image upload":         { args: "<list> <key> <file...>", desc: "Upload one or more images via API presigned URLs" },
 };
 
 // ── Argument parsing ──────────────────────────────────────────────────────────
