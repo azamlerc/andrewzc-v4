@@ -9,6 +9,7 @@ function computeValue(entity, subName) {
   const hasBadges        = entity.badges?.length > 0;
   const hasStrike        = entity.strike === true;
   const hasMultipleIcons = entity.icons?.length > 1;
+  const hasFlags         = entity.flags?.length > 0;
   const extraIcons       = entity.icons?.slice(1);
 
   if (subName) {
@@ -16,14 +17,16 @@ function computeValue(entity, subName) {
     if (hasStrike)        item.strike = true;
     if (hasBadges)        item.badges = entity.badges;
     if (hasMultipleIcons) item.icons  = extraIcons;
+    if (hasFlags)         item.flags  = entity.flags;
     return { value: item, isArray: true };
   }
 
-  if (hasBadges || hasStrike || hasMultipleIcons) {
+  if (hasBadges || hasStrike || hasMultipleIcons || hasFlags) {
     const obj = { value: prefix || true };
     if (hasStrike)        obj.strike = true;
     if (hasBadges)        obj.badges = entity.badges;
     if (hasMultipleIcons) obj.icons  = extraIcons;
+    if (hasFlags)         obj.flags  = entity.flags;
     return { value: obj, isArray: false };
   }
 

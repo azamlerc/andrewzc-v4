@@ -25,6 +25,7 @@ const COMMANDS = {
   "props delete":         { args: "<list> <prop>",         desc: "Delete a prop from all entities and page schema" },
   "props rename":         { args: "<list> <old> <new>",    desc: "Rename a prop on all entities and page schema" },
   "props make-numeric":   { args: "<list> <prop>",         desc: "Convert string prop values to numbers" },
+  "props enrich-country-icons": { args: "<list> [--dryrun]", desc: "Add flag emoji icons to props that contain a country code" },
 
   // ── Wikipedia / Embeddings ───────────────────────────────────────────────────
   "wiki load":            { args: "[list]",                desc: "Fetch Wikipedia summaries and generate embeddings" },
@@ -84,20 +85,24 @@ if (posArgs.length === 0 || flags.has("--help")) {
 
 // ── Command dispatch ──────────────────────────────────────────────────────────
 
-// Try two-word command first, then one-word
-const twoWord = posArgs.slice(0, 2).join(" ");
-const oneWord = posArgs[0];
+// Try three-word command first, then two-word, then one-word
+const threeWord = posArgs.slice(0, 3).join(" ");
+const twoWord   = posArgs.slice(0, 2).join(" ");
+const oneWord   = posArgs[0];
 
 let command, cmdArgs;
 
-if (COMMANDS[twoWord]) {
+if (COMMANDS[threeWord]) {
+  command  = threeWord;
+  cmdArgs  = posArgs.slice(3);
+} else if (COMMANDS[twoWord]) {
   command  = twoWord;
   cmdArgs  = posArgs.slice(2);
 } else if (COMMANDS[oneWord]) {
   command  = oneWord;
   cmdArgs  = posArgs.slice(1);
 } else {
-  console.error(`\n❌ Unknown command: "${posArgs.slice(0, 2).join(" ")}"\n`);
+  console.error(`\n❌ Unknown command: "${posArgs.slice(0, 3).join(" ")}"\n`);
   printHelp();
   process.exit(1);
 }
