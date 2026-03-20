@@ -41,6 +41,9 @@ const COMMANDS = {
 
   // ── Images ───────────────────────────────────────────────────────────────────
   "image upload":         { args: "<list> <key> <file...>", desc: "Upload one or more images via API presigned URLs" },
+
+  // ── Backup ───────────────────────────────────────────────────────────────────
+  "backup":               { args: "[--out <dir>]",          desc: "Dump all collections to JSON (strips wikiEmbedding)" },
 };
 
 // ── Argument parsing ──────────────────────────────────────────────────────────
