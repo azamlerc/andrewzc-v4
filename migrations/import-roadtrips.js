@@ -9,12 +9,21 @@
 // - Writes status back to the JSON file: "added", "ambiguous", "not found"
 //   Entries already marked "added" are skipped on subsequent runs.
 //
+// Disambiguation rules (applied in order):
+//   1. Candidates on the trip's own page (list === tripKey) are legacy
+//      duplicates — deleted and removed from the pool.
+//   2. Candidates on the "places" list are never the right choice (places is
+//      just a visited-cities map, not a specific destination type) — removed
+//      from the pool silently. If this leaves exactly one candidate, use it.
+//   3. Match the last icon in the entry's icons array against the page icon
+//      of each remaining candidate's list.
+//
 // Usage:
 //   node migrations/import-roadtrips.js <key> [--dryrun]
 //
 // Example:
-//   node migrations/import-roadtrips.js finger-lakes
-//   node migrations/import-roadtrips.js finger-lakes --dryrun
+//   node migrations/import-roadtrips.js europe-2022
+//   node migrations/import-roadtrips.js europe-2022 --dryrun
 
 import "dotenv/config";
 import { MongoClient } from "mongodb";
@@ -117,15 +126,35 @@ async function main() {
   const updated   = new Map(); // list -> [name, ...]
   const notFound  = [];
   const ambiguous = [];
+  const deleted   = [];        // legacy duplicate entities removed
 
   for (const [entryKey, entry] of toProcess) {
     const { name, icons = [] } = entry;
     if (!name) continue;
 
-    const candidates = await entities.find(
+    let candidates = await entities.find(
       { name },
       { projection: { _id: 1, key: 1, list: 1, icons: 1 } }
     ).toArray();
+
+    // ── Rule 1: Delete legacy duplicates living on the trip page itself ───────
+    const duplicates = candidates.filter(c => c.list === tripKey);
+    if (duplicates.length > 0) {
+      for (const dup of duplicates) {
+        console.log(`  ${DRYRUN ? "[dry] " : ""}DELETE legacy duplicate: ${tripKey}/${dup.key} ("${name}")`);
+        deleted.push(`${tripKey}/${dup.key}`);
+        if (!DRYRUN) {
+          await entities.deleteOne({ _id: dup._id });
+        }
+      }
+      candidates = candidates.filter(c => c.list !== tripKey);
+    }
+
+    // ── Rule 2: Remove "places" candidates — never the right choice ───────────
+    const withoutPlaces = candidates.filter(c => c.list !== "places");
+    if (withoutPlaces.length < candidates.length) {
+      candidates = withoutPlaces;
+    }
 
     let match = null;
 
@@ -138,8 +167,7 @@ async function main() {
     if (candidates.length === 1) {
       match = candidates[0];
     } else {
-      // Disambiguate: last icon in entry's icons array matched against page icon
-      // (normalise both sides to strip VS-16)
+      // ── Rule 3: Match last icon against page icon ─────────────────────────
       const lastIcon = normalizeIcon(icons[icons.length - 1] ?? "");
       if (lastIcon) {
         const matchingLists = iconToLists.get(lastIcon) ?? new Set();
@@ -189,6 +217,11 @@ async function main() {
 
   // ── 5. Summary ─────────────────────────────────────────────────────────────
 
+  if (deleted.length > 0) {
+    console.log(`\n── Deleted legacy duplicates (${deleted.length}) ────────────────────`);
+    for (const d of deleted) console.log(`  ✗ ${d}`);
+  }
+
   console.log("\n── Updated ──────────────────────────────────────────────────");
   let totalUpdated = 0;
   for (const [list, names] of [...updated.entries()].sort()) {
@@ -213,7 +246,16 @@ async function main() {
     }
   }
 
-  console.log(`\nDone. Updated: ${totalUpdated}, Ambiguous: ${ambiguous.length}, Not found: ${notFound.length}, Skipped (already added): ${alreadyAdded}`);
+  // ── 6. Check if trip page is now empty ────────────────────────────────────
+
+  const remaining = await entities.countDocuments({ list: tripKey });
+  if (remaining === 0) {
+    console.log(`\n✓ No entities remain on page "${tripKey}" — safe to delete the page.`);
+  } else {
+    console.log(`\n⚠ ${remaining} entities still remain on page "${tripKey}".`);
+  }
+
+  console.log(`\nDone. Updated: ${totalUpdated}, Deleted: ${deleted.length}, Ambiguous: ${ambiguous.length}, Not found: ${notFound.length}, Skipped (already added): ${alreadyAdded}`);
   await client.close();
 }
 
