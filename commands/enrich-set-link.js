@@ -1,6 +1,8 @@
-// andrewzc enrich set-link <list>
+// andrewzc enrich set-link <list> [--overwrite]
 // Search Wikipedia by entity name and set the link field.
 // Skips pages tagged "people". Stops gracefully on rate limit.
+//
+// --overwrite: also replace existing links that are relative (don't start with "https")
 
 import { MongoClient } from "mongodb";
 
@@ -17,11 +19,13 @@ async function searchWikipediaLink(name) {
   return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
 }
 
-export async function run([list], _opts) {
+export async function run([list], opts) {
   if (!list) {
-    console.error("Usage: andrewzc enrich set-link <list>");
+    console.error("Usage: andrewzc enrich set-link <list> [--overwrite]");
     process.exit(1);
   }
+
+  const overwrite = opts?.overwrite ?? false;
 
   const client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
@@ -37,21 +41,33 @@ export async function run([list], _opts) {
     process.exit(1);
   }
 
+  // Base filter: no link yet
+  // With --overwrite: also include entities whose link is relative (doesn't start with "https")
+  const filter = overwrite
+    ? { list, $or: [{ link: { $exists: false } }, { link: { $not: /^https/ } }] }
+    : { list, link: { $exists: false } };
+
   const entities = await col.find(
-    { list, link: { $exists: false } },
-    { projection: { _id: 1, name: 1 } }
+    filter,
+    { projection: { _id: 1, name: 1, link: 1 } }
   ).toArray();
 
-  console.log(`Found ${entities.length} entities in "${list}" with no link.\n`);
+  const label = overwrite ? "with no link or a relative link" : "with no link";
+  console.log(`Found ${entities.length} entities in "${list}" ${label}.\n`);
 
   let updated = 0;
 
   for (const entity of entities) {
+    const oldLink = entity.link ?? null;
     try {
       const link = await searchWikipediaLink(entity.name);
       if (link) {
         await col.updateOne({ _id: entity._id }, { $set: { link } });
-        console.log(`  🔍 ${entity.name}: ${link}`);
+        if (oldLink) {
+          console.log(`  🔄 ${entity.name}: ${oldLink} → ${link}`);
+        } else {
+          console.log(`  🔍 ${entity.name}: ${link}`);
+        }
         updated++;
       } else {
         console.log(`  ⚠️  ${entity.name}: not found`);

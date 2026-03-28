@@ -9,7 +9,7 @@ import "dotenv/config";
 
 const COMMANDS = {
   // ── Enrichment ──────────────────────────────────────────────────────────────
-  "enrich set-link":      { args: "<list>",                desc: "Search Wikipedia by name and set link field" },
+  "enrich set-link":      { args: "<list> [--overwrite]",  desc: "Search Wikipedia by name and set link field" },
   "enrich set-coords":    { args: "<list> [--retry] [--test]", desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
   "enrich set-city":      { args: "<list>",                desc: "Set city from coords via nearest-city lookup" },
   "enrich set-reference": { args: "<list>",                desc: "Copy city → reference" },
@@ -52,11 +52,12 @@ const rawArgs  = process.argv.slice(2);
 const flags    = new Set(rawArgs.filter(a => a.startsWith("--")));
 const posArgs  = rawArgs.filter(a => !a.startsWith("--"));
 
-const dryRun   = flags.has("--dryrun");
-const retry    = flags.has("--retry");
-const testMode = flags.has("--test");
-const junkOnly = flags.has("--junk-only");
-const all      = flags.has("--all");
+const dryRun    = flags.has("--dryrun");
+const retry     = flags.has("--retry");
+const testMode  = flags.has("--test");
+const junkOnly  = flags.has("--junk-only");
+const all       = flags.has("--all");
+const overwrite = flags.has("--overwrite");
 
 // ── Help ──────────────────────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ function printHelp() {
 
   console.log("\nOptions:");
   console.log("  --dryrun       Print what would change without writing to DB");
+  console.log("  --overwrite    Replace relative links (not starting with https)");
   console.log("  --retry        Re-attempt previously failed operations");
   console.log("  --test         Report only, no writes");
   console.log("  --junk-only    Target only malformed entries");
@@ -117,4 +119,4 @@ if (COMMANDS[threeWord]) {
 
 // Lazily import command modules so startup is fast for --help
 const { run } = await import(`./commands/${command.replace(/ /g, "-")}.js`);
-await run(cmdArgs, { dryRun, retry, testMode, junkOnly, all });
+await run(cmdArgs, { dryRun, retry, testMode, junkOnly, all, overwrite });
