@@ -44,6 +44,9 @@ const COMMANDS = {
 
   // ── Backup ───────────────────────────────────────────────────────────────────
   "backup":               { args: "[--out <dir>]",          desc: "Dump all collections to JSON (strips wikiEmbedding)" },
+
+  // ── Flags ────────────────────────────────────────────────────────────────────
+  "flags":                { args: "",                       desc: "Rebuild flags.json from the database" },
 };
 
 // ── Argument parsing ──────────────────────────────────────────────────────────
