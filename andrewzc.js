@@ -15,6 +15,9 @@ const COMMANDS = {
   "enrich set-reference": { args: "<list>",                desc: "Copy city → reference" },
   "enrich run":           { args: "<list>",                desc: "Run full cascade: link → coords → city → reference" },
 
+  // ── Import ───────────────────────────────────────────────────────────────────
+  "import":               { args: "<page-key>",            desc: "Upsert page + entities from output/pages.json and output/entities.json" },
+
   // ── Keys ────────────────────────────────────────────────────────────────────
   "keys rekey":           { args: "<list> [--dryrun]",     desc: "Regenerate keys from page tags; merge duplicates" },
 
