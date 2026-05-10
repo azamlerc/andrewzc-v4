@@ -9,11 +9,12 @@ import "dotenv/config";
 
 const COMMANDS = {
   // ── Enrichment ──────────────────────────────────────────────────────────────
-  "enrich set-link":      { args: "<list> [--overwrite]",  desc: "Search Wikipedia by name and set link field" },
-  "enrich set-coords":    { args: "<list> [--retry] [--test]", desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
-  "enrich set-city":      { args: "<list>",                desc: "Set city from coords via nearest-city lookup" },
-  "enrich set-reference": { args: "<list>",                desc: "Copy city → reference" },
-  "enrich run":           { args: "<list>",                desc: "Run full cascade: link → coords → city → reference" },
+  "enrich set-link":      { args: "<list> [--overwrite]",           desc: "Search Wikipedia by name and set link field" },
+  "enrich set-coords":    { args: "<list> [--retry] [--test]",      desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
+  "enrich set-city":      { args: "<list>",                         desc: "Set city from coords via nearest-city lookup" },
+  "enrich set-reference": { args: "<list>",                         desc: "Copy city → reference" },
+  "enrich set-country":   { args: "<list>|--all [--overwrite] [--dryrun]",desc: "Derive country/countries from flag emoji in icons array" },
+  "enrich run":           { args: "<list>",                         desc: "Run full cascade: link → coords → city → reference" },
 
   // ── Import ───────────────────────────────────────────────────────────────────
   "import":               { args: "<page-key>",            desc: "Upsert page + entities from output/pages.json and output/entities.json" },
@@ -22,13 +23,13 @@ const COMMANDS = {
   "keys rekey":           { args: "<list> [--dryrun]",     desc: "Regenerate keys from page tags; merge duplicates" },
 
   // ── Props ────────────────────────────────────────────────────────────────────
-  "props update":         { args: "<list> <file.json> [--dryrun]", desc: "Set props on entities from a JSON file" },
+  "props update":         { args: "<list> <file.json> [--dryrun]",       desc: "Set props on entities from a JSON file" },
   "props merge":          { args: "<main-list> <detail-list> [--dryrun]", desc: "Merge a detail list into props of a main list" },
-  "props update-schema":  { args: "<list>",                desc: "Introspect props and write schema to page document" },
-  "props delete":         { args: "<list> <prop>",         desc: "Delete a prop from all entities and page schema" },
-  "props rename":         { args: "<list> <old> <new>",    desc: "Rename a prop on all entities and page schema" },
-  "props make-numeric":   { args: "<list> <prop>",         desc: "Convert string prop values to numbers" },
-  "props enrich-country-icons": { args: "<list> [--dryrun]", desc: "Add flag emoji icons to props that contain a country code" },
+  "props update-schema":  { args: "<list>",                              desc: "Introspect props and write schema to page document" },
+  "props delete":         { args: "<list> <prop>",                       desc: "Delete a prop from all entities and page schema" },
+  "props rename":         { args: "<list> <old> <new>",                  desc: "Rename a prop on all entities and page schema" },
+  "props make-numeric":   { args: "<list> <prop>",                       desc: "Convert string prop values to numbers" },
+  "props enrich-country-icons": { args: "<list> [--dryrun]",             desc: "Add flag emoji icons to props that contain a country code" },
 
   // ── Wikipedia / Embeddings ───────────────────────────────────────────────────
   "wiki load":            { args: "[list]",                desc: "Fetch Wikipedia summaries and generate embeddings" },
@@ -79,12 +80,12 @@ function printHelp() {
       lastGroup = group;
     }
     const full = args ? `${cmd} ${args}` : cmd;
-    console.log(`    ${full.padEnd(46)} ${desc}`);
+    console.log(`    ${full.padEnd(52)} ${desc}`);
   }
 
   console.log("\nOptions:");
   console.log("  --dryrun       Print what would change without writing to DB");
-  console.log("  --overwrite    Replace relative links (not starting with https)");
+  console.log("  --overwrite    Replace existing values (varies by command)");
   console.log("  --retry        Re-attempt previously failed operations");
   console.log("  --test         Report only, no writes");
   console.log("  --junk-only    Target only malformed entries");
@@ -99,7 +100,6 @@ if (posArgs.length === 0 || flags.has("--help")) {
 
 // ── Command dispatch ──────────────────────────────────────────────────────────
 
-// Try three-word command first, then two-word, then one-word
 const threeWord = posArgs.slice(0, 3).join(" ");
 const twoWord   = posArgs.slice(0, 2).join(" ");
 const oneWord   = posArgs[0];
@@ -123,6 +123,5 @@ if (COMMANDS[threeWord]) {
 
 // ── Command implementations ───────────────────────────────────────────────────
 
-// Lazily import command modules so startup is fast for --help
 const { run } = await import(`./commands/${command.replace(/ /g, "-")}.js`);
 await run(cmdArgs, { dryRun, retry, testMode, junkOnly, all, overwrite });
