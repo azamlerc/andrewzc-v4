@@ -84,7 +84,7 @@ async function main() {
     const { key } = toCompare[i];
     const staticFile = join(SITE_DIR, `${key}.html`);
     const staticUrl  = `${BASE_URL}/${key}.html`;
-    const dynamicUrl = `${BASE_URL}/page.html?id=${key}`;
+    const dynamicUrl = `${BASE_URL}/${key}`;
 
     console.log(`\n[${i + 1}/${toCompare.length}] Comparing: ${key}`);
     console.log(`  Static:  ${staticUrl}`);
