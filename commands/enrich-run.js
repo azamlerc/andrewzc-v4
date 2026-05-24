@@ -7,6 +7,10 @@ import { MongoClient } from "mongodb";
 import { findNearestCity } from "../utilities.js";
 import { getCoordsFromUrl } from "../../andrewzc-api/wiki.js";
 
+const DELAY_MS = 2_000; // pause between Wikipedia requests to avoid rate limiting
+
+const delay = () => new Promise(r => setTimeout(r, DELAY_MS));
+
 async function searchWikipediaLink(name) {
   const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
   const res = await fetch(url);
@@ -54,12 +58,14 @@ export async function run([list], _opts) {
 
   for (const entity of entities) {
     const update = {};
+    let madeWikiRequest = false;
 
     // 1. Link
     if (!wikiBlocked && !entity.link) {
       try {
         const found = await searchWikipediaLink(entity.name);
         if (found) { update.link = found; console.log(`  🔍 ${entity.name}: ${found}`); }
+        madeWikiRequest = true;
       } catch (err) {
         if (err.rateLimited) {
           console.warn("  🚫 Rate limited — skipping Wikipedia for this run.");
@@ -70,8 +76,9 @@ export async function run([list], _opts) {
 
     const link = update.link ?? entity.link;
 
-    // 2. Coords
+    // 2. Coords — delay first if we already made a link request this iteration
     if (!wikiBlocked && !skipCoords && !entity.coords && link && /wikipedia\.org|booking\.com|airbnb\.com/.test(link)) {
+      if (madeWikiRequest) await delay();
       try {
         const result = await getCoordsFromUrl(link, { list });
         if (result) {
@@ -81,6 +88,7 @@ export async function run([list], _opts) {
         } else {
           console.log(`  ⚠️  ${entity.name}: coords not found`);
         }
+        madeWikiRequest = true;
       } catch (err) {
         if (err.rateLimited) {
           console.warn("  🚫 Rate limited — skipping Wikipedia for this run.");
@@ -107,6 +115,9 @@ export async function run([list], _opts) {
       await col.updateOne({ _id: entity._id }, { $set: update });
       enriched++;
     }
+
+    // Pause between entities if any Wikipedia requests were made
+    if (madeWikiRequest && !wikiBlocked) await delay();
   }
 
   console.log(`\nDone. Enriched ${enriched}/${entities.length} entities.`);

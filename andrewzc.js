@@ -46,6 +46,11 @@ const COMMANDS = {
   // ── Images ───────────────────────────────────────────────────────────────────
   "image upload":         { args: "<list> <key> <file...>", desc: "Upload one or more images via API presigned URLs" },
 
+  // ── Photos ───────────────────────────────────────────────────────────────────
+  "photos set-dates":     { args: "<list> [--key <key>] [--radius <m>] [--dryrun]", desc: "Set dateVisited from nearby photos in local Photos library" },
+  "photos suggest":       { args: "<list> [--start <key>] [--radius <m>]",           desc: "Interactively suggest nearby photos for entities with no images" },
+  "photos import-album":  { args: "<list> <album-json> [--radius <m>] [--resume]",   desc: "Interactively create entities from a Photos album export" },
+
   // ── Backup ───────────────────────────────────────────────────────────────────
   "backup":               { args: "[--out <dir>]",          desc: "Dump all collections to JSON (strips wikiEmbedding)" },
 
