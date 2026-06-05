@@ -9,12 +9,14 @@ import "dotenv/config";
 
 const COMMANDS = {
   // ── Enrichment ──────────────────────────────────────────────────────────────
-  "enrich set-link":      { args: "<list> [--overwrite]",           desc: "Search Wikipedia by name and set link field" },
-  "enrich set-coords":    { args: "<list> [--retry] [--test]",      desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
-  "enrich set-city":      { args: "<list>",                         desc: "Set city from coords via nearest-city lookup" },
-  "enrich set-reference": { args: "<list>",                         desc: "Copy city → reference" },
-  "enrich set-country":   { args: "<list>|--all [--overwrite] [--dryrun]",desc: "Derive country/countries from flag emoji in icons array" },
-  "enrich run":           { args: "<list>",                         desc: "Run full cascade: link → coords → city → reference" },
+  "enrich set-link":      { args: "<list> [--overwrite]",                      desc: "Search Wikipedia by name and set link field" },
+  "enrich set-coords":    { args: "<list> [--retry] [--test]",                 desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
+  "enrich set-city":      { args: "<list>",                                    desc: "Set city from coords via nearest-city lookup" },
+  "enrich set-reference": { args: "<list>",                                    desc: "Copy city → reference" },
+  "enrich set-country":   { args: "<list>|--all [--overwrite] [--dryrun]",     desc: "Derive country/countries from flag emoji in icons array" },
+  "enrich set-icon":      { args: "<list> [--overwrite] [--dryrun]",           desc: "Derive flag emoji from country/countries and set icons array" },
+  "enrich find-country":  { args: "<list> [--overwrite] [--dryrun]",           desc: "Copy country from nearest geolocated entity in the DB" },
+  "enrich run":           { args: "<list>",                                    desc: "Run full cascade: link → coords → city → reference" },
 
   // ── Import ───────────────────────────────────────────────────────────────────
   "import":               { args: "<page-key>",            desc: "Upsert page + entities from output/pages.json and output/entities.json" },

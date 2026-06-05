@@ -7,11 +7,12 @@
     "andrewzc": "./andrewzc.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.740.0",
     "csv-parse": "^5.0.0",
     "dotenv": "^16.4.5",
+    "jsdom": "^29.1.1",
     "mongodb": "^6.0.0",
     "openai": "^4.0.0",
-    "sharp": "^0.34.4",
-		"@aws-sdk/client-s3": "^3.740.0"
+    "sharp": "^0.34.4"
   }
 }
