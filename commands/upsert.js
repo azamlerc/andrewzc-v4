@@ -30,6 +30,31 @@ function setNested(obj, dotPath, value) {
   cur[parts[parts.length - 1]] = value;
 }
 
+// Derive a display name from a Wikipedia URL, mirroring the logic in edit.js.
+// e.g. https://en.wikipedia.org/wiki/Eiffel_Tower → "Eiffel Tower"
+function nameFromWikipediaUrl(url) {
+  try {
+    const parsed = new URL(String(url || "").trim());
+    if (!/\.wikipedia\.org$/i.test(parsed.hostname)) return null;
+    if (!parsed.pathname.startsWith("/wiki/")) return null;
+    const rawTitle = parsed.pathname.slice("/wiki/".length);
+    if (!rawTitle) return null;
+    return decodeURIComponent(rawTitle).replace(/_/g, " ").trim() || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Normalise the icons field to an array of emoji strings.
+// CSV imports come in as a single string (e.g. "🇮🇹") or space-separated
+// string (e.g. "🇮🇹 🚠"); JSON imports may already be an array.
+function normalizeIcons(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  // Split on whitespace to handle multiple emoji
+  return String(value).trim().split(/\s+/).filter(Boolean);
+}
+
 async function searchWikipediaLink(name) {
   const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
   const res = await fetch(url);
@@ -96,6 +121,18 @@ export async function run([filePath, listArg], _opts) {
     if (!list) { skipped++; errors.push(`Row missing list: ${JSON.stringify(doc)}`); continue; }
     doc.list = list;
 
+    // Normalise icons to array early so downstream code can rely on it
+    if (doc.icons != null) doc.icons = normalizeIcons(doc.icons);
+
+    // Derive name from Wikipedia link if name is missing
+    if (!doc.name && doc.link) {
+      const derived = nameFromWikipediaUrl(doc.link);
+      if (derived) {
+        doc.name = derived;
+        console.log(`  📖 Derived name from link: "${derived}"`);
+      }
+    }
+
     if (!doc.name) { skipped++; errors.push(`[${list}] Row missing name: ${JSON.stringify(doc)}`); continue; }
     if (doc.key)   { skipped++; errors.push(`[${list}] "${doc.name}" — 'key' must not be in input`); continue; }
 
@@ -106,14 +143,14 @@ export async function run([filePath, listArg], _opts) {
       skipped++; errors.push(`[${list}] "${doc.name}" — page requires reference but none provided`); continue;
     }
 
-    if (doc.country && !doc.icons) {
+    if (doc.country && !doc.icons?.length) {
       const flag = countryCodeToFlagEmoji(doc.country);
       if (flag) doc.icons = [flag];
       else warnings.push(`[${list}] "${doc.name}" — could not convert country "${doc.country}" to flag`);
-    } else if (doc.icons && !doc.country) {
+    } else if (doc.icons?.length && !doc.country) {
       const codes = countryCodesFromIcons(doc.icons);
       if (codes.length === 1) doc.country = codes[0];
-      else if (codes.length > 1) doc.country = codes;
+      else if (codes.length > 1) doc.countries = codes;
     }
 
     const key = computeKey(doc, tags);
