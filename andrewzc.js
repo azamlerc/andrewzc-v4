@@ -38,6 +38,9 @@ const COMMANDS = {
   "wiki clear":           { args: "<list> [--junk-only]",  desc: "Clear wikiSummary, wikiEmbedding, enrichedAt" },
   "wiki clear-embeddings":{ args: "<list|--all>",          desc: "Clear only wikiEmbedding, keep summaries" },
 
+  // ── Caption Embeddings ────────────────────────────────────────────────────────
+  "caption embed":        { args: "[list]",                desc: "Generate captionEmbedding vectors for entities with a caption" },
+
   // ── Stats ────────────────────────────────────────────────────────────────────
   "stats completion":     { args: "",                      desc: "Show completion % (visited/total) for all lists" },
   "stats links":          { args: "",                      desc: "Show Wikipedia link language breakdown" },
