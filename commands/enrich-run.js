@@ -1,11 +1,12 @@
 // andrewzc enrich run <list>
-// Run the full enrichment cascade: link → coords → city → reference.
+// Run the full enrichment cascade: link → location → city → reference.
 // Each step only runs if its prerequisite is present and the target is absent.
 // On Wikipedia rate limit, skips remaining Wikipedia steps but continues city/reference.
 
 import { MongoClient } from "mongodb";
+import { formatLocation } from "../../andrewzc-api/location.js";
 import { findNearestCity } from "../utilities.js";
-import { getCoordsFromUrl } from "../../andrewzc-api/wiki.js";
+import { getLocationFromUrl } from "../../andrewzc-api/wiki.js";
 
 const DELAY_MS = 2_000; // pause between Wikipedia requests to avoid rate limiting
 
@@ -16,7 +17,15 @@ async function searchWikipediaLink(name) {
   const res = await fetch(url);
   if (res.status === 429) throw Object.assign(new Error("Rate limited"), { rateLimited: true });
   if (!res.ok) return null;
-  const json = await res.json();
+  const body = await res.text();
+  let json;
+  try {
+    json = JSON.parse(body);
+  } catch {
+    const contentType = res.headers.get("content-type") ?? "unknown content type";
+    console.warn(`  Invalid JSON response (${contentType}) for Wikipedia search: ${name}`);
+    return null;
+  }
   const title = json?.query?.search?.[0]?.title;
   if (!title) return null;
   return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
@@ -36,19 +45,19 @@ export async function run([list], _opts) {
   const page = await db.collection("pages").findOne({ key: list }, { projection: { tags: 1 } });
   const tags = page?.tags ?? [];
 
-  const skipCoords     = tags.includes("no-coords") || tags.includes("people");
+  const skipLocation     = tags.includes("no-coords") || tags.includes("people");
   const needsReference = tags.includes("reference") || tags.includes("reference-optional");
 
   // Find entities missing any enrichable field
   const missingConditions = [{ link: { $exists: false } }];
-  if (!skipCoords) {
-    missingConditions.push({ coords: { $exists: false } }, { city: { $exists: false } });
+  if (!skipLocation) {
+    missingConditions.push({ location: null }, { city: { $exists: false } });
   }
   if (needsReference) missingConditions.push({ reference: { $exists: false } });
 
   const entities = await col.find(
     { list, $or: missingConditions },
-    { projection: { key: 1, name: 1, link: 1, coords: 1, location: 1, city: 1, reference: 1 } }
+    { projection: { key: 1, name: 1, link: 1, location: 1, city: 1, reference: 1 } }
   ).toArray();
 
   console.log(`Enriching ${entities.length} entities in "${list}"...\n`);
@@ -76,17 +85,16 @@ export async function run([list], _opts) {
 
     const link = update.link ?? entity.link;
 
-    // 2. Coords — delay first if we already made a link request this iteration
-    if (!wikiBlocked && !skipCoords && !entity.coords && link && /wikipedia\.org|booking\.com|airbnb\.com/.test(link)) {
+    // 2. Location — delay first if we already made a link request this iteration
+    if (!wikiBlocked && !skipLocation && !entity.location && link && /wikipedia\.org|booking\.com|airbnb\.com/.test(link)) {
       if (madeWikiRequest) await delay();
       try {
-        const result = await getCoordsFromUrl(link, { list });
+        const result = await getLocationFromUrl(link, { list });
         if (result) {
-          update.coords   = result.coords;
           update.location = result.location;
-          console.log(`  📍 ${entity.name}: ${result.coords}`);
+          console.log(`  📍 ${entity.name}: ${formatLocation(result.location)}`);
         } else {
-          console.log(`  ⚠️  ${entity.name}: coords not found`);
+          console.log(`  ⚠️  ${entity.name}: location not found`);
         }
         madeWikiRequest = true;
       } catch (err) {
@@ -99,7 +107,7 @@ export async function run([list], _opts) {
 
     // 3. City
     const location = update.location ?? entity.location;
-    if (!skipCoords && location && !entity.city) {
+    if (!skipLocation && location && !entity.city) {
       const city = await findNearestCity(location, col);
       if (city) { update.city = city; console.log(`  🏙️  ${entity.name}: city = ${city}`); }
     }

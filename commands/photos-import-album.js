@@ -3,7 +3,9 @@
 // Interactively import photos from an exported osxphotos JSON album into a
 // new page on andrewzc.net, creating entities and uploading photos.
 //
-// Photos are clustered by location (greedy, within --radius metres).
+// Photos are clustered by location AND calendar day (greedy, within
+// --radius metres) — a revisit on a different day gets its own cluster,
+// so uploading it never re-uploads an earlier visit's photos.
 // For each cluster the script opens the first photo in Apple Photos and
 // presents name candidates from:
 //   1. place_names from Photos metadata
@@ -15,12 +17,17 @@
 // cluster so you can resume safely with --resume.
 //
 // Usage:
-//   node andrewzc.js photos import-album <list> <album-json> [--radius <m>] [--originals <dir>] [--resume]
+//   node andrewzc.js photos import-album <list> [album-json] [--radius <m>] [--originals <dir>] [--resume]
+//
+// <album-json> and --originals both default from <list> to what
+// `photos export-album` writes: import-progress/<list>.json and
+// import-progress/<list>-originals/. Only pass them explicitly to use
+// something else.
 //
 // Example:
-//   node andrewzc.js photos import-album urinals import-progress/urinals.json
+//   node andrewzc.js photos import-album urinals
+//   node andrewzc.js photos import-album urinals --resume
 //   node andrewzc.js photos import-album urinals import-progress/urinals.json --originals import-progress/urinals-originals
-//   node andrewzc.js photos import-album urinals import-progress/urinals.json --originals import-progress/urinals-originals --resume
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
@@ -28,12 +35,12 @@ import { MongoClient } from "mongodb";
 import * as readline from "readline";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { insertEntity, geoPointFromCoords } from "../database.js";
+import { insertEntity } from "../database.js";
+import { countryCodeToFlagEmoji } from "../utilities.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROGRESS_DIR = join(__dirname, "../import-progress");
 const EDIT_BASE    = "http://localhost/andrewzc/edit.html";
-const LOCAL_URI    = "mongodb://localhost:27017";
 const API_BASE     = (process.env.ANDREWZC_API_BASE || "https://api.andrewzc.net").replace(/\/+$/, "");
 const ADMIN_SESSION   = process.env.ANDREWZC_ADMIN_SESSION || "";
 const ADMIN_USERNAME  = process.env.ANDREWZC_ADMIN_USERNAME || "";
@@ -50,6 +57,20 @@ function haversineMetres(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Calendar day (YYYY-MM-DD) a photo was taken on, or null if undated.
+function dayOf(photo) {
+  const d = (photo.date || photo.date_original || "").slice(0, 10);
+  return d || null;
+}
+
+// Groups photos that are both nearby (within radiusMetres) AND taken on the
+// same calendar day. Two visits to the same spot on different days become
+// two separate clusters rather than one — otherwise a revisit's cluster
+// would include the first visit's photos too, and re-uploading the whole
+// cluster to the already-existing entity would re-upload photos it already
+// has. A missing date on either side doesn't block grouping (coordinates
+// still do the real matching); it only splits a cluster when both sides
+// have a date and they disagree.
 function clusterPhotos(photos, radiusMetres) {
   const used = new Set();
   const clusters = [];
@@ -58,6 +79,7 @@ function clusterPhotos(photos, radiusMetres) {
     if (used.has(i)) continue;
     const anchor = photos[i];
     if (!anchor.latitude || !anchor.longitude) continue;
+    const anchorDay = dayOf(anchor);
 
     const cluster = [anchor];
     used.add(i);
@@ -66,6 +88,8 @@ function clusterPhotos(photos, radiusMetres) {
       if (used.has(j)) continue;
       const p = photos[j];
       if (!p.latitude || !p.longitude) continue;
+      const day = dayOf(p);
+      if (anchorDay && day && anchorDay !== day) continue;
       if (haversineMetres(anchor.latitude, anchor.longitude, p.latitude, p.longitude) <= radiusMetres) {
         cluster.push(p);
         used.add(j);
@@ -80,6 +104,19 @@ function clusterPhotos(photos, radiusMetres) {
 
 function fingerprint(cluster) {
   return cluster[0].uuid;
+}
+
+// Newest-first, using the most recent photo date anywhere in the cluster
+// (not just the anchor) — so re-running against a growing album surfaces
+// the new stuff at the top and you can quit as soon as you hit clusters
+// already on the page, instead of walking the whole album from the start.
+function clusterLatestDate(cluster) {
+  let latest = "";
+  for (const p of cluster) {
+    const d = p.date || p.date_original || "";
+    if (d > latest) latest = d;
+  }
+  return latest;
 }
 
 function nameCandidates(cluster, nearbyEntities) {
@@ -275,17 +312,44 @@ async function findNearbyEntities(entitiesCol, lat, lon, radiusMetres) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export async function run([list, albumJson, ...rest], _opts) {
-  if (!list || !albumJson) {
-    console.error("Usage: node andrewzc.js photos import-album <list> <album-json> [--radius <m>] [--resume]");
+export async function run([list, ...rest], _opts) {
+  if (!list) {
+    console.error("Usage: node andrewzc.js photos import-album <list> [album-json] [--radius <m>] [--originals <dir>] [--resume]");
     process.exit(1);
   }
 
   const radiusIdx    = rest.indexOf("--radius");
   const radius       = radiusIdx !== -1 ? parseInt(rest[radiusIdx + 1], 10) : 200;
   const originalsIdx = rest.indexOf("--originals");
-  const originalsDir = originalsIdx !== -1 ? rest[originalsIdx + 1] : null;
+  let   originalsDir = originalsIdx !== -1 ? rest[originalsIdx + 1] : null;
   const resume       = rest.includes("--resume");
+
+  // album-json is optional — defaults to import-progress/<list>.json (what
+  // `photos export-album` writes). Whatever flags are given, the flag names
+  // and their values are excluded first; the first remaining token, if any,
+  // is an explicit override of that default path.
+  const consumed = new Set();
+  if (radiusIdx    !== -1) { consumed.add(radiusIdx);    consumed.add(radiusIdx + 1); }
+  if (originalsIdx !== -1) { consumed.add(originalsIdx); consumed.add(originalsIdx + 1); }
+  rest.forEach((a, i) => { if (a === "--resume") consumed.add(i); });
+
+  const explicitJson = rest.find((a, i) => !consumed.has(i) && !a.startsWith("--"));
+  const albumJson    = explicitJson || join(PROGRESS_DIR, `${list}.json`);
+
+  if (!existsSync(albumJson)) {
+    console.error(`Album JSON not found: ${albumJson}`);
+    console.error(`Run "node andrewzc.js photos export-album <AlbumName> ${list}" first, or pass an explicit path.`);
+    process.exit(1);
+  }
+
+  if (!originalsDir) {
+    const guessedOriginals = join(PROGRESS_DIR, `${list}-originals`);
+    if (existsSync(guessedOriginals)) {
+      originalsDir = guessedOriginals;
+    } else {
+      console.log(`⚠ No originals folder at ${guessedOriginals} — uploads will fall back to Photos' lower-resolution derivatives. Pass --originals to point at a full-resolution export.`);
+    }
+  }
 
   if (originalsDir) console.log(`Using originals from: ${originalsDir}`);
 
@@ -298,7 +362,8 @@ export async function run([list, albumJson, ...rest], _opts) {
 
   // Cluster
   const clusters = clusterPhotos(photos, radius);
-  console.log(`Clustered into ${clusters.length} groups (radius: ${radius}m)\n`);
+  clusters.sort((a, b) => clusterLatestDate(b).localeCompare(clusterLatestDate(a)));
+  console.log(`Clustered into ${clusters.length} groups (radius: ${radius}m), newest first\n`);
 
   // Load progress
   const progress = loadProgress(progressFile);
@@ -308,9 +373,7 @@ export async function run([list, albumJson, ...rest], _opts) {
 
   // Connect to DBs
   const atlasClient = new MongoClient(process.env.MONGODB_URI);
-  const localClient = new MongoClient(LOCAL_URI);
   await atlasClient.connect();
-  await localClient.connect();
 
   const entitiesCol = atlasClient.db(process.env.MONGODB_DB || "andrewzc").collection("entities");
 
@@ -343,7 +406,7 @@ export async function run([list, albumJson, ...rest], _opts) {
 
       // Display cluster info
       console.log(`\n[${ i + 1}/${clusters.length}] ${cluster.length} photo${cluster.length === 1 ? "" : "s"} · ${dateStr}`);
-      console.log(`  Coords: ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+      console.log(`  Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
 
       // AI captions (unique, from all photos in cluster)
       const captions = [...new Set(cluster.map(p => p.ai_caption).filter(Boolean))];
@@ -404,11 +467,8 @@ export async function run([list, albumJson, ...rest], _opts) {
       }
 
       // Build and insert entity directly via MongoDB, or add to existing
-      const coordsStr = `${lat.toFixed(8)}, ${lon.toFixed(8)}`;
       const isoCode   = anchor.place?.address?.iso_country_code?.toUpperCase();
-      const iconFlag  = isoCode
-        ? String.fromCodePoint(...[...isoCode].map(c => 0x1F1A5 + c.charCodeAt(0)))
-        : null;
+      const iconFlag  = isoCode ? countryCodeToFlagEmoji(isoCode) : null;
 
       const existing = await entitiesCol.findOne({ list, key: chosenKey });
 
@@ -420,8 +480,7 @@ export async function run([list, albumJson, ...rest], _opts) {
           name:     chosenName,
           list,
           been:     true,
-          coords:   coordsStr,
-          location: geoPointFromCoords(coordsStr),
+          location: { type: "Point", coordinates: [lon, lat] },
           ...(dateStr ? { dateVisited: dateStr } : {}),
           ...(anchor.place?.address?.city        ? { city: anchor.place.address.city } : {}),
           ...(isoCode                            ? { country: isoCode }                : {}),
@@ -445,7 +504,6 @@ export async function run([list, albumJson, ...rest], _opts) {
   } finally {
     rl.close();
     await atlasClient.close();
-    await localClient.close();
   }
 
   console.log(`\nDone. Created: ${created}, Skipped: ${skippedCount}.`);

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { pointLatLon } from "../../andrewzc-api/location.js";
 // dedup-list.js
 //
 // Interactively finds and merges near-duplicate entities in a list.
@@ -54,15 +55,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function parseCoords(entity) {
-  if (entity.location?.coordinates) {
-    const [lon, lat] = entity.location.coordinates;
-    return { lat, lon };
-  }
-  if (entity.coords) {
-    const [lat, lon] = entity.coords.split(",").map(Number);
-    if (!isNaN(lat) && !isNaN(lon)) return { lat, lon };
-  }
-  return null;
+  return pointLatLon(entity.location);
 }
 
 // ── Merge two entities into the winner ───────────────────────────────────────
@@ -92,7 +85,7 @@ if (DRYRUN) console.log("-- DRY RUN --\n");
 
 // Fetch all entities in the list that have coordinates
 const all = await col
-  .find({ list }, { projection: { _id: 1, key: 1, name: 1, been: 1, link: 1, city: 1, address: 1, zip: 1, coords: 1, location: 1 } })
+  .find({ list }, { projection: { _id: 1, key: 1, name: 1, been: 1, link: 1, city: 1, address: 1, zip: 1, location: 1 } })
   .toArray();
 
 console.log(`Loaded ${all.length} entities from "${list}" with coordinates`);
@@ -173,7 +166,9 @@ for (let i = 0; i < pairs.length; i++) {
   if (mergedDoc.been) console.log(`  → been: true (from ${loser.been ? "both" : "winner"})`);
 
   if (!DRYRUN) {
-    await col.replaceOne({ _id: winner._id }, { ...mergedDoc, _id: winner._id });
+    // Preserve fields outside this tool's projection, including retired data.
+    const { _id, ...fields } = mergedDoc;
+    await col.updateOne({ _id: winner._id }, { $set: fields });
     await col.deleteOne({ _id: loser._id });
   }
 

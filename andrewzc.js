@@ -10,13 +10,14 @@ import "dotenv/config";
 const COMMANDS = {
   // ── Enrichment ──────────────────────────────────────────────────────────────
   "enrich set-link":      { args: "<list> [--overwrite]",                      desc: "Search Wikipedia by name and set link field" },
-  "enrich set-coords":    { args: "<list> [--retry] [--test]",                 desc: "Fetch coords from Wikipedia/Booking/Airbnb links" },
-  "enrich set-city":      { args: "<list>",                                    desc: "Set city from coords via nearest-city lookup" },
+  "enrich set-location":    { args: "[list] [--test] [--dryrun]",                 desc: "Fetch GeoJSON location from Wikipedia/Booking/Airbnb links" },
+  "enrich set-city":      { args: "<list>",                                    desc: "Set city from location via nearest-city lookup" },
+  "enrich set-city-from-cities": { args: "[city-key] [--dryrun]", desc: "Fill missing cities by searching around each city (20 km)" },
   "enrich set-reference": { args: "<list>",                                    desc: "Copy city → reference" },
   "enrich set-country":   { args: "<list>|--all [--overwrite] [--dryrun]",     desc: "Derive country/countries from flag emoji in icons array" },
   "enrich set-icon":      { args: "<list> [--overwrite] [--dryrun]",           desc: "Derive flag emoji from country/countries and set icons array" },
   "enrich find-country":  { args: "<list> [--overwrite] [--dryrun]",           desc: "Copy country from nearest geolocated entity in the DB" },
-  "enrich run":           { args: "<list>",                                    desc: "Run full cascade: link → coords → city → reference" },
+  "enrich run":           { args: "<list>",                                    desc: "Run full cascade: link → location → city → reference" },
 
   // ── Import ───────────────────────────────────────────────────────────────────
   "import":               { args: "<page-key>",            desc: "Upsert page + entities from output/pages.json and output/entities.json" },
@@ -54,10 +55,13 @@ const COMMANDS = {
   // ── Photos ───────────────────────────────────────────────────────────────────
   "photos set-dates":     { args: "<list> [--key <key>] [--radius <m>] [--dryrun]", desc: "Set dateVisited from nearby photos in local Photos library" },
   "photos suggest":       { args: "<list> [--start <key>] [--radius <m>]",           desc: "Interactively suggest nearby photos for entities with no images" },
-  "photos import-album":  { args: "<list> <album-json> [--radius <m>] [--resume]",   desc: "Interactively create entities from a Photos album export" },
+  "photos import-album":  { args: "<list> [album-json] [--radius <m>] [--originals <dir>] [--resume]", desc: "Interactively create entities from a Photos album export" },
+  "photos export-album":  { args: "<AlbumName> <list> [--force]",                     desc: "Export an album via osxphotos: JSON metadata + full-res originals" },
 
   // ── Backup ───────────────────────────────────────────────────────────────────
   "backup":               { args: "[--out <dir>]",          desc: "Dump all collections to JSON (strips wikiEmbedding)" },
+
+  "location backfill":    { args: "[list] [--dryrun]",       desc: "Fill missing GeoJSON locations from existing coords only" },
 
   // ── Flags ────────────────────────────────────────────────────────────────────
   "flags":                { args: "",                       desc: "Rebuild flags.json from the database" },
@@ -67,7 +71,6 @@ const COMMANDS = {
 
 const rawArgs  = process.argv.slice(2);
 const flags    = new Set(rawArgs.filter(a => a.startsWith("--")));
-const posArgs  = rawArgs.filter(a => !a.startsWith("--"));
 
 const dryRun    = flags.has("--dryrun");
 const retry     = flags.has("--retry");
@@ -103,30 +106,34 @@ function printHelp() {
   console.log("  --help         Show this help\n");
 }
 
-if (posArgs.length === 0 || flags.has("--help")) {
+if (rawArgs.length === 0 || flags.has("--help")) {
   printHelp();
   process.exit(0);
 }
 
 // ── Command dispatch ──────────────────────────────────────────────────────────
 
-const threeWord = posArgs.slice(0, 3).join(" ");
-const twoWord   = posArgs.slice(0, 2).join(" ");
-const oneWord   = posArgs[0];
+// Command names are always the leading, contiguous words (never preceded
+// by a flag), so they're matched against the raw args directly — the
+// remainder (cmdArgs) then keeps every flag and its value intact, in the
+// order given, exactly as each command's own run() expects to parse it.
+const threeWord = rawArgs.slice(0, 3).join(" ");
+const twoWord   = rawArgs.slice(0, 2).join(" ");
+const oneWord   = rawArgs[0];
 
 let command, cmdArgs;
 
 if (COMMANDS[threeWord]) {
   command  = threeWord;
-  cmdArgs  = posArgs.slice(3);
+  cmdArgs  = rawArgs.slice(3);
 } else if (COMMANDS[twoWord]) {
   command  = twoWord;
-  cmdArgs  = posArgs.slice(2);
+  cmdArgs  = rawArgs.slice(2);
 } else if (COMMANDS[oneWord]) {
   command  = oneWord;
-  cmdArgs  = posArgs.slice(1);
+  cmdArgs  = rawArgs.slice(1);
 } else {
-  console.error(`\n❌ Unknown command: "${posArgs.slice(0, 3).join(" ")}"\n`);
+  console.error(`\n❌ Unknown command: "${rawArgs.slice(0, 3).join(" ")}"\n`);
   printHelp();
   process.exit(1);
 }

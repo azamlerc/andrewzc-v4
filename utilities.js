@@ -86,7 +86,9 @@ export function countryCodesFromIcons(icons = []) {
  * Requires a MongoDB collection handle.
  * Returns the city name string, or null.
  */
-export async function findNearestCity(location, entitiesCollection, radiusKm = 30) {
+export const CITY_RADIUS_KM = 20;
+
+export async function findNearestCity(location, entitiesCollection, radiusKm = CITY_RADIUS_KM) {
   const geoPoint = location.type === "Point"
     ? location
     : { type: "Point", coordinates: [location.lon, location.lat] };

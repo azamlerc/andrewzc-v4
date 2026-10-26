@@ -9,7 +9,7 @@
 //   node andrewzc.js photos set-dates <list> [--key <key>] [--radius <metres>] [--dryrun]
 
 import { MongoClient } from "mongodb";
-import { parseCoords } from "../utilities.js";
+import { pointLatLon } from "../../andrewzc-api/location.js";
 
 const LOCAL_URI = "mongodb://localhost:27017";
 
@@ -44,14 +44,9 @@ async function findEarliestPhoto(photosCol, coords, RADII) {
 async function processEntity(entity, photosCol, entitiesCol, dryRun, RADII) {
   const photoInfo = photosLabel(entity.images);
 
-  if (!entity.coords) {
-    console.log(`  ⚠ No coords — skipping  [${photoInfo}]`);
-    return "skipped";
-  }
-
-  const coords = parseCoords(entity.coords);
+  const coords = pointLatLon(entity.location);
   if (!coords) {
-    console.log(`  ⚠ Could not parse coords: ${entity.coords}  [${photoInfo}]`);
+    console.log(`  ⚠ No valid location — skipping  [${photoInfo}]`);
     return "skipped";
   }
 

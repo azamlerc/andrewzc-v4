@@ -1,3 +1,4 @@
+import { assertLocationFields, formatLocation } from "../../andrewzc-api/location.js";
 // andrewzc upsert <file.csv|json> [list]
 // Upsert entities from a file with full enrichment cascade.
 // See README for full details.
@@ -8,9 +9,9 @@ import { parse } from "csv-parse/sync";
 import path from "path";
 import {
   computeKey, countryCodeToFlagEmoji, countryCodesFromIcons,
-  findNearestCity, parseCoords, formatCoords,
+  findNearestCity,
 } from "../utilities.js";
-import { getCoordsFromUrl } from "../../andrewzc-api/wiki.js";
+import { getLocationFromUrl } from "../../andrewzc-api/wiki.js";
 
 function coerceValue(v) {
   if (v === "true")  return true;
@@ -96,6 +97,12 @@ export async function run([filePath, listArg], _opts) {
     });
   }
 
+  // Validate the complete file before any enrichment or database writes.
+  for (const row of rows) {
+    if (typeof row.location === "string") row.location = JSON.parse(row.location);
+    assertLocationFields(row);
+  }
+
   const client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
   const db  = client.db(process.env.MONGODB_DB || "andrewzc");
@@ -157,40 +164,28 @@ export async function run([filePath, listArg], _opts) {
     if (!key) { skipped++; errors.push(`[${list}] "${doc.name}" — could not compute key`); continue; }
     doc.key = key;
 
-    const existing = await col.findOne({ key, list }, { projection: { link: 1, coords: 1, location: 1, city: 1, reference: 1 } });
+    const existing = await col.findOne({ key, list }, { projection: { link: 1, location: 1, city: 1, reference: 1 } });
 
     if (!doc.link && !existing?.link) {
       const found = await searchWikipediaLink(doc.name);
       if (found) { doc.link = found; console.log(`  🔍 ${doc.name}: ${found}`); }
     }
 
-    const skipCoords = tags.includes("no-coords") || tags.includes("people");
-    if (!skipCoords && doc.coords) {
-      const parsed = parseCoords(doc.coords);
-      if (parsed) {
-        doc.coords   = formatCoords(parsed);
-        doc.location = { type: "Point", coordinates: [parsed.lon, parsed.lat] };
-      } else {
-        warnings.push(`[${list}] "${doc.name}" — could not parse coords: "${doc.coords}"`);
-        delete doc.coords;
-      }
-    }
-
-    const hasCoords   = doc.coords || (existing?.coords && existing.coords !== "not-found");
+    const skipLocation = tags.includes("no-coords") || tags.includes("people");
+    const hasLocation = doc.location || existing?.location;
     const linkToFetch = doc.link ?? existing?.link;
-    if (!skipCoords && !hasCoords && linkToFetch && /wikipedia\.org|booking\.com|airbnb\.com/.test(linkToFetch)) {
-      const result = await getCoordsFromUrl(linkToFetch, { list });
+    if (!skipLocation && !hasLocation && linkToFetch && /wikipedia\.org|booking\.com|airbnb\.com/.test(linkToFetch)) {
+      const result = await getLocationFromUrl(linkToFetch, { list });
       if (result) {
-        doc.coords   = result.coords;
         doc.location = result.location;
-        console.log(`  📍 ${doc.name}: ${result.coords}`);
+        console.log(`  📍 ${doc.name}: ${formatLocation(result.location)}`);
       } else {
-        console.log(`  ⚠️  ${doc.name}: coords not found`);
+        console.log(`  ⚠️  ${doc.name}: location not found`);
       }
     }
 
     const locationForCity = doc.location ?? existing?.location;
-    if (!skipCoords && locationForCity && !doc.city && !existing?.city) {
+    if (!skipLocation && locationForCity && !doc.city && !existing?.city) {
       const city = await findNearestCity(locationForCity, col);
       if (city) { doc.city = city; console.log(`  🏙️  ${doc.name}: city = ${city}`); }
     }

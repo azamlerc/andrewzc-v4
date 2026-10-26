@@ -259,7 +259,6 @@ async function main() {
 
     const doc = {
       been: false,
-      coords: `${lat}, ${lon}`,
       icons: countries.map(flagEmoji),
       key,
       link: `https://www.spomenikdatabase.org/${key}`,

@@ -13,7 +13,7 @@
 
 import "dotenv/config";
 import { MongoClient } from "mongodb";
-import { parseCoords } from "../utilities.js";
+import { pointLatLon } from "../../andrewzc-api/location.js";
 
 const DRYRUN  = process.argv.includes("--dryrun");
 const pageArg = process.argv.indexOf("--page");
@@ -58,14 +58,9 @@ function photosLabel(images) {
 async function processEntity(entity, photos, entities) {
   const photoInfo = photosLabel(entity.images);
 
-  if (!entity.coords) {
-    console.log(`  ⚠ No coords — skipping  [${photoInfo}]`);
-    return "skipped";
-  }
-
-  const coords = parseCoords(entity.coords);
+  const coords = pointLatLon(entity.location);
   if (!coords) {
-    console.log(`  ⚠ Could not parse coords: ${entity.coords}  [${photoInfo}]`);
+    console.log(`  ⚠ No valid location — skipping  [${photoInfo}]`);
     return "skipped";
   }
 

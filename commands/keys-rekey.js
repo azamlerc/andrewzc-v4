@@ -1,3 +1,4 @@
+import { pointLatLon } from "../../andrewzc-api/location.js";
 // andrewzc keys rekey <list> [--dryrun]
 // Regenerate keys for all entities in a list based on page tags.
 // When a rekeyed entity would clash, the two are merged per field-level rules.
@@ -6,14 +7,7 @@ import { MongoClient } from "mongodb";
 import { queryPages } from "../database.js";
 import { computeKey } from "../utilities.js";
 
-const SCALAR_FIELDS = ["name", "link", "coords", "city", "reference", "prefix", "wikiSummary"];
-
-function parseLatLon(s) {
-  if (!s) return null;
-  const parts = String(s).split(",").map(p => parseFloat(p.trim()));
-  if (parts.length < 2 || parts.some(isNaN)) return null;
-  return { lat: parts[0], lon: parts[1] };
-}
+const SCALAR_FIELDS = ["name", "link", "location", "city", "reference", "prefix", "wikiSummary"];
 
 function mergeScalar(a, b, fieldName) {
   const aEmpty = a == null || a === "";
@@ -26,8 +20,8 @@ function mergeScalar(a, b, fieldName) {
   if (fieldName === "wikiSummary") {
     return { value: a.length >= b.length ? a : b, conflict: false };
   }
-  if (fieldName === "coords") {
-    const pa = parseLatLon(a), pb = parseLatLon(b);
+  if (fieldName === "location") {
+    const pa = pointLatLon(a), pb = pointLatLon(b);
     if (pa && pb && Math.abs(pa.lat - pb.lat) < 0.001 && Math.abs(pa.lon - pb.lon) < 0.001) {
       return { value: a, conflict: false };
     }
@@ -63,7 +57,7 @@ function mergeProps(a = {}, b = {}) {
   return { merged, conflict };
 }
 
-function mergeEntities(dst, src) {
+export function mergeEntities(dst, src) {
   const $set = {};
   let conflict = false;
 

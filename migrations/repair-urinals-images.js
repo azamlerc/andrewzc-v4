@@ -1,3 +1,4 @@
+import { pointLatLon } from "../../andrewzc-api/location.js";
 // migrations/repair-urinals-images.js
 //
 // Repairs low-res images uploaded from Photos derivatives by replacing them
@@ -5,7 +6,7 @@
 //
 // For each urinals entity with images:
 //   1. Check each image in S3 — skip if already >= SIZE_THRESHOLD bytes
-//   2. Spatial-join entity coords against urinals.json to find candidate UUIDs
+//   2. Spatial-join entity locations against urinals.json to find candidate UUIDs
 //   3. Find the corresponding file in urinals-originals/ by UUID
 //   4. Re-process with sharp and PUT directly to S3, overwriting the bad file
 //
@@ -53,13 +54,6 @@ function haversineMetres(lat1, lon1, lat2, lon2) {
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function parseCoords(coordsStr) {
-  if (!coordsStr) return null;
-  const [lat, lon] = coordsStr.split(",").map(s => parseFloat(s.trim()));
-  if (isNaN(lat) || isNaN(lon)) return null;
-  return { lat, lon };
 }
 
 // ── File helpers ──────────────────────────────────────────────────────────────
@@ -159,9 +153,9 @@ async function main() {
   let repaired = 0, skipped = 0, noMatch = 0;
 
   for (const entity of docs) {
-    const coords = parseCoords(entity.coords);
+    const coords = pointLatLon(entity.location);
     if (!coords) {
-      console.log(`${entity.name}: no coords, skipping`);
+      console.log(`${entity.name}: no valid location, skipping`);
       noMatch++;
       continue;
     }

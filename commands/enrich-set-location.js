@@ -1,15 +1,15 @@
-// andrewzc enrich set-coords <list> [--retry] [--test] [--dryrun]
-// Fetch coords and location from Wikipedia/Booking/Airbnb links.
-// --retry   Also attempt entities previously marked "not-found"
+import { formatLocation } from "../../andrewzc-api/location.js";
+// andrewzc enrich set-location <list> [--test] [--dryrun]
+// Fetch GeoJSON location from Wikipedia/Booking/Airbnb links.
 // --test    Report eligible entities by list; no writes
 // --dryrun  Show what would be written without committing
 
 import { MongoClient } from "mongodb";
-import { getCoordsFromUrl } from "../../andrewzc-api/wiki.js";
+import { getLocationFromUrl } from "../../andrewzc-api/wiki.js";
 
 const DELAY_MS = 500;
 
-export async function run([list], { retry, testMode, dryRun }) {
+export async function run([list], { testMode, dryRun }) {
   const client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
   const db       = client.db(process.env.MONGODB_DB || "andrewzc");
@@ -20,10 +20,7 @@ export async function run([list], { retry, testMode, dryRun }) {
   const noCoordsPages = await pages.find({ tags: "no-coords" }, { projection: { key: 1 } }).toArray();
   const noCoordsLists = new Set(noCoordsPages.map(p => p.key));
 
-  const filter = retry
-    ? { link: { $regex: "wikipedia\\.org|booking\\.com|airbnb\\.com" },
-        $or: [{ coords: { $exists: false } }, { coords: "not-found" }] }
-    : { link: { $regex: "wikipedia\\.org|booking\\.com|airbnb\\.com" }, coords: { $exists: false } };
+  const filter = { link: { $regex: "wikipedia\\.org|booking\\.com|airbnb\\.com" }, location: null };
 
   if (list) filter.list = list;
 
@@ -44,7 +41,7 @@ export async function run([list], { retry, testMode, dryRun }) {
     const sorted  = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     const maxList = Math.max(...sorted.map(([l]) => l.length));
     const total   = sorted.reduce((s, [, n]) => s + n, 0);
-    console.log("=== enrich set-coords --test ===\n");
+    console.log("=== enrich set-location --test ===\n");
     for (const [l, count] of sorted) {
       const suffix = count < 5 ? `  — ${keysByList[l].join(", ")}` : "";
       console.log(`  ${l.padEnd(maxList)}  ${String(count).padStart(4)}${suffix}`);
@@ -62,7 +59,7 @@ export async function run([list], { retry, testMode, dryRun }) {
 
     let result = null;
     try {
-      result = await getCoordsFromUrl(entity.link, { list: entity.list });
+      result = await getLocationFromUrl(entity.link, { list: entity.list });
     } catch (err) {
       console.error(`\n  ❌ ${err.message}`);
       errors++;
@@ -72,17 +69,14 @@ export async function run([list], { retry, testMode, dryRun }) {
     await new Promise(r => setTimeout(r, DELAY_MS));
 
     if (result) {
-      console.log(`✅ ${result.coords}`);
+      console.log(`✅ ${formatLocation(result.location)}`);
       found++;
       if (!dryRun) {
-        await entities.updateOne({ _id: entity._id }, { $set: { coords: result.coords, location: result.location } });
+        await entities.updateOne({ _id: entity._id, location: null }, { $set: { location: result.location } });
       }
     } else {
       console.log("❌ not found");
       notFound++;
-      if (!dryRun) {
-        await entities.updateOne({ _id: entity._id }, { $set: { coords: "not-found" } });
-      }
     }
   }
 

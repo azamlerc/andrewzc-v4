@@ -14,7 +14,7 @@
 import { MongoClient } from "mongodb";
 import { execSync } from "child_process";
 import * as readline from "readline";
-import { parseCoords } from "../utilities.js";
+import { pointLatLon } from "../../andrewzc-api/location.js";
 
 const LOCAL_URI   = "mongodb://localhost:27017";
 
@@ -117,8 +117,7 @@ export async function run([list, ...rest], _opts) {
     for (let i = startIndex; i < docs.length; i++) {
       const entity = docs[i];
 
-      if (!entity.coords) continue;
-      const coords = parseCoords(entity.coords);
+      const coords = pointLatLon(entity.location);
       if (!coords) continue;
 
       const result = await findNearbyPhotos(photosCol, coords, 200);

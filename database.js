@@ -5,7 +5,7 @@
 // persistent pool). Uses the same MONGODB_URI and MONGODB_DB env vars.
 
 import { MongoClient } from "mongodb";
-import { parseCoords } from "./utilities.js";
+import { assertLocationFields } from "../andrewzc-api/location.js";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB  = process.env.MONGODB_DB || "andrewzc";
@@ -79,6 +79,7 @@ async function bulkSave({ entities }, trackedDocs, { ordered = false, chunkSize 
       const doc    = tracked.doc;
       const update = tracked.delta();
       const isNew  = !!doc.__isNew;
+      assertLocationFields(isNew ? doc : update.$set || {});
       delete doc.__isNew;
 
       if (isNew) { ops.push({ insertOne: { document: doc } }); continue; }
@@ -103,12 +104,6 @@ async function bulkSave({ entities }, trackedDocs, { ordered = false, chunkSize 
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-export function geoPointFromCoords(coords) {
-  const ll = parseCoords(coords);
-  if (!ll) return null;
-  return { type: "Point", coordinates: [ll.lon, ll.lat] };
-}
-
 export async function fetchEntity(list, key) {
   return withDb(async ({ entities }) => entities.findOne({ list, key }));
 }
@@ -128,6 +123,7 @@ export async function queryPages(filter = {}) {
 
 export async function bulkSetFields(updates) {
   if (updates.length === 0) return;
+  for (const { fields } of updates) assertLocationFields(fields);
   return withDb(async ({ entities }) => {
     const ops = updates.map(({ _id, fields }) => ({
       updateOne: { filter: { _id }, update: { $set: fields } },
@@ -143,6 +139,7 @@ export async function updatePage(key, fields) {
 }
 
 export async function insertEntity(doc) {
+  assertLocationFields(doc);
   return withDb(async ({ entities }) => {
     const res = await entities.insertOne(doc);
     return { ...doc, _id: res.insertedId };

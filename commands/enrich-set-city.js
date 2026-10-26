@@ -1,5 +1,5 @@
 // andrewzc enrich set-city <list>
-// Set city field from coords via nearest-city lookup.
+// Set city field from location via nearest-city lookup.
 
 import { MongoClient } from "mongodb";
 import { findNearestCity } from "../utilities.js";

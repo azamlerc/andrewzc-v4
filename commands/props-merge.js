@@ -59,9 +59,12 @@ export async function run([mainList, detailList], { dryRun }) {
 
     if (!mainEntity) {
       if (dryRun) { console.log(`Would create: ${mainList}/${baseKey}`); continue; }
-      const { _id, list: _list, ...fields } = detail;
+      // Custom flags are already captured by computeValue for this prop.
+      const { _id, list: _list, flags: _flags, coords: _legacyCoords, ...fields } = detail;
       mainEntity = await insertEntity({
         ...fields, key: baseKey, list: mainList,
+        // Extra detail-list icons belong only to the page-specific prop.
+        ...(Array.isArray(fields.icons) ? { icons: fields.icons.slice(0, 1) } : {}),
         dateAdded: new Date().toISOString().split("T")[0], props: {},
       });
       created++;

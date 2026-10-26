@@ -109,13 +109,11 @@ for (const [name, marker] of markerData) {
   const addr     = addressData.get(name) || {};
   const lat      = marker.lat;
   const lon      = marker.lon;
-  const coords   = `${lat.toFixed(8)}, ${lon.toFixed(8)}`;
   const location = { type: "Point", coordinates: [lon, lat] };
 
   entities.push({
     name,
     link:    marker.link,
-    coords,
     location,
     address: addr.street ?? null,  // street only, not zip/city
     city:    addr.city   ?? null,
@@ -129,7 +127,7 @@ for (const [name, marker] of markerData) {
 console.log(`\nMerged ${entities.length} entities:\n`);
 for (const e of entities) {
   console.log(`  ${e.name}`);
-  console.log(`    coords:  ${e.coords}`);
+  console.log(`    location: ${JSON.stringify(e.location)}`);
   console.log(`    link:    ${e.link}`);
   console.log(`    address: ${e.address}`);
   console.log(`    city:    ${e.city}, zip: ${e.zip}`);

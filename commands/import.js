@@ -1,3 +1,4 @@
+import { assertLocationFields } from "../../andrewzc-api/location.js";
 // andrewzc import <page-key>
 // Upserts a page record and its entities from the master export files:
 //   andrewzc.net/output/pages.json
@@ -55,6 +56,7 @@ export async function run([pageKey], _opts) {
   }
 
   const entityDocs = allEntities.filter(e => e.list === pageKey);
+  for (const entity of entityDocs) assertLocationFields(entity);
   console.log(`Found page "${pageKey}" and ${entityDocs.length} entities in source files.\n`);
 
   // ── Connect ─────────────────────────────────────────────────────────────────

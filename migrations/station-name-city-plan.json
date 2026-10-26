@@ -1,0 +1,618 @@
+[
+  {
+    "oldKey": "1-decembrie-1918",
+    "name": "1 Decembrie 1918",
+    "city": "Bucharest",
+    "newKey": "bucharest-1-decembrie-1918",
+    "evidence": "https://en.wikipedia.org/wiki/1_Decembrie_1918_metro_station"
+  },
+  {
+    "oldKey": "1-mai",
+    "name": "1 Mai",
+    "city": "Bucharest",
+    "newKey": "bucharest-1-mai",
+    "evidence": "https://en.wikipedia.org/wiki/1_Mai_metro_station"
+  },
+  {
+    "oldKey": "30-de-diciembre",
+    "name": "30 de Diciembre",
+    "city": "Buenos Aires",
+    "newKey": "buenos-aires-30-de-diciembre",
+    "evidence": "https://es.wikipedia.org/wiki/Once-30_de_Diciembre_(subte_de_Buenos_Aires)"
+  },
+  {
+    "oldKey": "9-de-julio",
+    "name": "9 de Julio",
+    "city": "Buenos Aires",
+    "newKey": "buenos-aires-9-de-julio",
+    "evidence": "https://es.wikipedia.org/wiki/9_de_Julio_(subte_de_Buenos_Aires)"
+  },
+  {
+    "oldKey": "alfonso-xiii",
+    "name": "Alfonso XIII",
+    "city": "Madrid",
+    "newKey": "madrid-alfonso-xiii",
+    "evidence": "Existing stations/madrid-alfonso-xiii"
+  },
+  {
+    "oldKey": "altitude-cent",
+    "name": "Altitude Cent",
+    "city": "Brussels",
+    "newKey": "brussels-altitude-cent",
+    "evidence": "https://fr.wikipedia.org/wiki/Altitude_Cent"
+  },
+  {
+    "oldKey": "belorusskaya",
+    "name": "Belorusskaya",
+    "city": "Moscow",
+    "newKey": "moscow-belorusskaya",
+    "evidence": "Existing stations/moscow-belorusskaya"
+  },
+  {
+    "oldKey": "blackfriars",
+    "name": "Blackfriars",
+    "city": "London",
+    "newKey": "london-blackfriars",
+    "evidence": "https://en.wikipedia.org/wiki/Blackfriars_station"
+  },
+  {
+    "oldKey": "blackhorse-road",
+    "name": "Blackhorse Road",
+    "city": "London",
+    "newKey": "london-blackhorse-road",
+    "evidence": "https://en.wikipedia.org/wiki/Blackhorse_Road_station"
+  },
+  {
+    "oldKey": "blackwall",
+    "name": "Blackwall",
+    "city": "London",
+    "newKey": "london-blackwall",
+    "evidence": "https://en.wikipedia.org/wiki/Blackwall_DLR_station"
+  },
+  {
+    "oldKey": "blanche",
+    "name": "Blanche",
+    "city": "Paris",
+    "newKey": "paris-blanche",
+    "evidence": "https://en.wikipedia.org/wiki/Blanche_station"
+  },
+  {
+    "oldKey": "blok-45",
+    "name": "Blok 45",
+    "city": "Belgrade",
+    "newKey": "belgrade-blok-45",
+    "evidence": "https://sr.wikipedia.org/wiki/%D0%91%D0%BB%D0%BE%D0%BA_45"
+  },
+  {
+    "oldKey": "bounds-green",
+    "name": "Bounds Green",
+    "city": "London",
+    "newKey": "london-bounds-green",
+    "evidence": "https://en.wikipedia.org/wiki/Bounds_Green_tube_station"
+  },
+  {
+    "oldKey": "bowling-green",
+    "name": "Bowling Green",
+    "city": "New York",
+    "newKey": "new-york-bowling-green",
+    "evidence": "Existing stations/new-york-bowling-green"
+  },
+  {
+    "oldKey": "cadillac",
+    "name": "Cadillac",
+    "city": "Montréal",
+    "newKey": "montreal-cadillac",
+    "evidence": "https://fr.wikipedia.org/wiki/Cadillac_(m%C3%A9tro_de_Montr%C3%A9al)"
+  },
+  {
+    "oldKey": "calle-11",
+    "name": "Calle 11",
+    "city": "Mexico City",
+    "newKey": "mexico-city-calle-11",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "camarones",
+    "name": "Camarones",
+    "city": "Mexico City",
+    "newKey": "mexico-city-camarones",
+    "evidence": "Existing stations/mexico-city-camarones"
+  },
+  {
+    "oldKey": "chateau-rouge",
+    "name": "Château Rouge",
+    "city": "Paris",
+    "newKey": "paris-chateau-rouge",
+    "evidence": "https://en.wikipedia.org/wiki/Ch%C3%A2teau_Rouge_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "chemin-vert",
+    "name": "Chemin Vert",
+    "city": "Paris",
+    "newKey": "paris-chemin-vert",
+    "evidence": "https://en.wikipedia.org/wiki/Chemin_Vert_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "chevaleret",
+    "name": "Chevaleret",
+    "city": "Paris",
+    "newKey": "paris-chevaleret",
+    "evidence": "https://fr.wikipedia.org/wiki/Chevaleret_(m%C3%A9tro_de_Paris)"
+  },
+  {
+    "oldKey": "chien-vert",
+    "name": "Chien Vert",
+    "city": "Brussels",
+    "newKey": "brussels-chien-vert",
+    "evidence": "https://en.wikipedia.org/wiki/Trams_in_Brussels"
+  },
+  {
+    "oldKey": "constitucion-de-1917",
+    "name": "Constitución de 1917",
+    "city": "Mexico City",
+    "newKey": "mexico-city-constitucion-de-1917",
+    "evidence": "Existing stations/mexico-city-constitucion-de-1917"
+  },
+  {
+    "oldKey": "corvetto",
+    "name": "Corvetto",
+    "city": "Milan",
+    "newKey": "milan-corvetto",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "croix-rouge",
+    "name": "Croix Rouge",
+    "city": "Paris",
+    "newKey": "paris-croix-rouge",
+    "evidence": "https://en.wikipedia.org/wiki/Croix-Rouge_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "de-ferrari",
+    "name": "De Ferrari",
+    "city": "Genoa",
+    "newKey": "genoa-de-ferrari",
+    "evidence": "https://en.wikipedia.org/wiki/De_Ferrari_(Genoa_Metro)"
+  },
+  {
+    "oldKey": "deportivo-18-de-marzo",
+    "name": "Deportivo 18 de Marzo",
+    "city": "Mexico City",
+    "newKey": "mexico-city-deportivo-18-de-marzo",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "doce-de-octubre",
+    "name": "Doce de Octubre",
+    "city": "Medellín",
+    "newKey": "medellin-doce-de-octubre",
+    "evidence": "https://es.wikipedia.org/wiki/Doce_de_Octubre_(Medell%C3%ADn)"
+  },
+  {
+    "oldKey": "dodge-city",
+    "name": "Dodge City",
+    "city": "Dodge City",
+    "newKey": "dodge-city-dodge-city",
+    "evidence": "https://en.wikipedia.org/wiki/Dodge_City_station"
+  },
+  {
+    "oldKey": "elephant-castle",
+    "name": "Elephant & Castle",
+    "city": "London",
+    "newKey": "london-elephant-castle",
+    "evidence": "https://en.wikipedia.org/wiki/Elephant_%26_Castle_tube_station"
+  },
+  {
+    "oldKey": "escuadron-201",
+    "name": "Escuadrón 201",
+    "city": "Mexico City",
+    "newKey": "mexico-city-escuadron-201",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "etangs-noirs",
+    "name": "Étangs Noirs",
+    "city": "Brussels",
+    "newKey": "brussels-etangs-noirs",
+    "evidence": "https://fr.wikipedia.org/wiki/Étangs_Noirs_(métro_de_Bruxelles)"
+  },
+  {
+    "oldKey": "five-points",
+    "name": "Five Points",
+    "city": "Atlanta",
+    "newKey": "atlanta-five-points",
+    "evidence": "Existing stations/atlanta-five-points"
+  },
+  {
+    "oldKey": "fives",
+    "name": "Fives",
+    "city": "Lille",
+    "newKey": "lille-fives",
+    "evidence": "https://fr.wikipedia.org/wiki/Fives_(m%C3%A9tro_de_Lille)"
+  },
+  {
+    "oldKey": "ford",
+    "name": "Ford",
+    "city": "Ford",
+    "newKey": "ford-ford",
+    "evidence": "https://en.wikipedia.org/wiki/Ford_railway_station"
+  },
+  {
+    "oldKey": "george-v",
+    "name": "George V",
+    "city": "Paris",
+    "newKey": "paris-george-v",
+    "evidence": "Existing stations/paris-george-v"
+  },
+  {
+    "oldKey": "giovanni-xxiii",
+    "name": "Giovanni XXIII",
+    "city": "Catania",
+    "newKey": "catania-giovanni-xxiii",
+    "evidence": "https://it.wikipedia.org/wiki/Giovanni_XXIII_(metropolitana_di_Catania)"
+  },
+  {
+    "oldKey": "goldhawk-road",
+    "name": "Goldhawk Road",
+    "city": "London",
+    "newKey": "london-goldhawk-road",
+    "evidence": "Existing stations/london-goldhawk-road"
+  },
+  {
+    "oldKey": "green-park",
+    "name": "Green Park",
+    "city": "London",
+    "newKey": "london-green-park",
+    "evidence": "https://en.wikipedia.org/wiki/Green_Park_tube_station"
+  },
+  {
+    "oldKey": "greenbelt",
+    "name": "Greenbelt",
+    "city": "Washington",
+    "newKey": "washington-greenbelt",
+    "evidence": "https://en.wikipedia.org/wiki/Greenbelt_station"
+  },
+  {
+    "oldKey": "greenpoint-avenue",
+    "name": "Greenpoint Avenue",
+    "city": "New York",
+    "newKey": "new-york-greenpoint-avenue",
+    "evidence": "https://en.wikipedia.org/wiki/Greenpoint_Avenue_station"
+  },
+  {
+    "oldKey": "greenwich",
+    "name": "Greenwich",
+    "city": "London",
+    "newKey": "london-greenwich",
+    "evidence": "Existing stations/london-greenwich"
+  },
+  {
+    "oldKey": "holden",
+    "name": "Holden",
+    "city": "Melbourne",
+    "newKey": "melbourne-holden",
+    "evidence": "https://en.wikipedia.org/wiki/Holden_railway_station"
+  },
+  {
+    "oldKey": "hospital-20-de-noviembre",
+    "name": "Hospital 20 de Noviembre",
+    "city": "Mexico City",
+    "newKey": "mexico-city-hospital-20-de-noviembre",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "javel-andre-citroen",
+    "name": "Javel–André Citroën",
+    "city": "Paris",
+    "newKey": "paris-javel-andre-citroen",
+    "evidence": "Existing stations/paris-javel-andre-citroen"
+  },
+  {
+    "oldKey": "juan-xxiii",
+    "name": "Juan XXIII",
+    "city": "Medellín",
+    "newKey": "medellin-juan-xxiii",
+    "evidence": "https://es.wikipedia.org/wiki/Estaci%C3%B3n_Juan_XXIII_(Metro_de_Medell%C3%ADn)"
+  },
+  {
+    "oldKey": "kensal-green",
+    "name": "Kensal Green",
+    "city": "London",
+    "newKey": "london-kensal-green",
+    "evidence": "https://en.wikipedia.org/wiki/Kensal_Green_station"
+  },
+  {
+    "oldKey": "krasnopresnenskaya",
+    "name": "Krasnopresnenskaya",
+    "city": "Moscow",
+    "newKey": "moscow-krasnopresnenskaya",
+    "evidence": "https://en.wikipedia.org/wiki/Krasnopresnenskaya"
+  },
+  {
+    "oldKey": "krasnoselskaya",
+    "name": "Krasnoselskaya",
+    "city": "Moscow",
+    "newKey": "moscow-krasnoselskaya",
+    "evidence": "https://en.wikipedia.org/wiki/Krasnoselskaya"
+  },
+  {
+    "oldKey": "krasnye-vorota",
+    "name": "Krasnye Vorota",
+    "city": "Moscow",
+    "newKey": "moscow-krasnye-vorota",
+    "evidence": "https://en.wikipedia.org/wiki/Krasnye_Vorota_(Moscow_Metro)"
+  },
+  {
+    "oldKey": "lavender",
+    "name": "Lavender",
+    "city": "Singapore",
+    "newKey": "singapore-lavender",
+    "evidence": "https://en.wikipedia.org/wiki/Lavender_MRT_station"
+  },
+  {
+    "oldKey": "le-vert-de-maisons",
+    "name": "Le Vert de Maisons",
+    "city": "Paris",
+    "newKey": "paris-le-vert-de-maisons",
+    "evidence": "Existing stations/paris-le-vert-de-maisons; user confirmed combine as one interchange station"
+  },
+  {
+    "oldKey": "leopold-ii",
+    "name": "Leopold II",
+    "city": "Brussels",
+    "newKey": "brussels-leopold-ii",
+    "evidence": "Existing stations/brussels-leopold-ii"
+  },
+  {
+    "oldKey": "leopold-iii",
+    "name": "Leopold III",
+    "city": "Brussels",
+    "newKey": "brussels-leopold-iii",
+    "evidence": "Existing stations/brussels-leopold-iii"
+  },
+  {
+    "oldKey": "louis-blanc",
+    "name": "Louis Blanc",
+    "city": "Paris",
+    "newKey": "paris-louis-blanc",
+    "evidence": "Existing stations/paris-louis-blanc"
+  },
+  {
+    "oldKey": "maison-blanche",
+    "name": "Maison Blanche",
+    "city": "Paris",
+    "newKey": "paris-maison-blanche",
+    "evidence": "Existing stations/paris-maison-blanche"
+  },
+  {
+    "oldKey": "marcadet-poissonniers",
+    "name": "Marcadet Poissonniers",
+    "city": "Paris",
+    "newKey": "paris-marcadet-poissonniers",
+    "evidence": "https://en.wikipedia.org/wiki/Marcadet%E2%80%93Poissonniers_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "mercedessstrasse",
+    "name": "Mercedesstraße",
+    "city": "Stuttgart",
+    "newKey": "stuttgart-mercedesstraße",
+    "evidence": "https://en.wikipedia.org/wiki/Stuttgart_Stadtbahn"
+  },
+  {
+    "oldKey": "nine-elms",
+    "name": "Nine Elms",
+    "city": "London",
+    "newKey": "london-nine-elms",
+    "evidence": "Existing stations/london-nine-elms"
+  },
+  {
+    "oldKey": "norte-45",
+    "name": "Norte 45",
+    "city": "Mexico City",
+    "newKey": "mexico-city-norte-45",
+    "evidence": "Existing stations/mexico-city-norte-45"
+  },
+  {
+    "oldKey": "once",
+    "name": "Once",
+    "city": "Buenos Aires",
+    "newKey": "buenos-aires-once",
+    "evidence": "https://es.wikipedia.org/wiki/Once-30_de_Diciembre_(subte_de_Buenos_Aires)"
+  },
+  {
+    "oldKey": "parsons-green",
+    "name": "Parsons Green",
+    "city": "London",
+    "newKey": "london-parsons-green",
+    "evidence": "Existing stations/london-parsons-green"
+  },
+  {
+    "oldKey": "pere-iv",
+    "name": "Pere IV",
+    "city": "Barcelona",
+    "newKey": "barcelona-pere-iv",
+    "evidence": "https://es.wikipedia.org/wiki/Estaci%C3%B3n_de_Pere_IV"
+  },
+  {
+    "oldKey": "pershamaiskaya",
+    "name": "Pershamaiskaya",
+    "city": "Minsk",
+    "newKey": "minsk-pershamaiskaya",
+    "evidence": "https://en.wikipedia.org/wiki/Pyershamayskaya_(Minsk_Metro)"
+  },
+  {
+    "oldKey": "pie-ix",
+    "name": "Pie-IX",
+    "city": "Montréal",
+    "newKey": "montreal-pie-ix",
+    "evidence": "https://fr.wikipedia.org/wiki/Pie-IX_(m%C3%A9tro_de_Montr%C3%A9al)"
+  },
+  {
+    "oldKey": "pigalle",
+    "name": "Pigalle",
+    "city": "Paris",
+    "newKey": "paris-pigalle",
+    "evidence": "Existing stations/paris-pigalle"
+  },
+  {
+    "oldKey": "piges",
+    "name": "Piges",
+    "city": "Charleroi",
+    "newKey": "charleroi-piges",
+    "evidence": "https://en.wikipedia.org/wiki/Piges_metro_station"
+  },
+  {
+    "oldKey": "pio-xii",
+    "name": "Pío XII",
+    "city": "Madrid",
+    "newKey": "madrid-pio-xii",
+    "evidence": "Existing stations/madrid-pio-xii"
+  },
+  {
+    "oldKey": "poissoniere",
+    "name": "Poissonière",
+    "city": "Paris",
+    "newKey": "paris-poissoniere",
+    "evidence": "https://en.wikipedia.org/wiki/Poissonni%C3%A8re_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "porte-doree",
+    "name": "Porte Dorée",
+    "city": "Paris",
+    "newKey": "paris-porte-doree",
+    "evidence": "https://en.wikipedia.org/wiki/Porte_Dor%C3%A9e_(Paris_M%C3%A9tro)"
+  },
+  {
+    "oldKey": "quatre-septembre",
+    "name": "Quatre Septembre",
+    "city": "Paris",
+    "newKey": "paris-quatre-septembre",
+    "evidence": "https://fr.wikipedia.org/wiki/Quatre-Septembre_(m%C3%A9tro_de_Paris)"
+  },
+  {
+    "oldKey": "redhill",
+    "name": "Redhill",
+    "city": "Singapore",
+    "newKey": "singapore-redhill",
+    "evidence": "https://en.wikipedia.org/wiki/Redhill_MRT_station"
+  },
+  {
+    "oldKey": "russelsheim-opelwerk",
+    "name": "Rüsselsheim Opelwerk",
+    "city": "Rüsselsheim",
+    "newKey": "russelsheim-russelsheim-opelwerk",
+    "evidence": "https://en.wikipedia.org/wiki/R%C3%BCsselsheim_Opelwerk_station"
+  },
+  {
+    "oldKey": "sete-bicas",
+    "name": "Sete Bicas",
+    "city": "Porto",
+    "newKey": "porto-sete-bicas",
+    "evidence": "https://en.wikipedia.org/wiki/Sete_Bicas_station"
+  },
+  {
+    "oldKey": "seven-sisters",
+    "name": "Seven Sisters",
+    "city": "London",
+    "newKey": "london-seven-sisters",
+    "evidence": "Existing stations/london-seven-sisters"
+  },
+  {
+    "oldKey": "shin-toyota",
+    "name": "Shin-Toyota",
+    "city": "Toyota",
+    "newKey": "toyota-shin-toyota",
+    "evidence": "https://en.wikipedia.org/wiki/Shin-Toyota_Station"
+  },
+  {
+    "oldKey": "silver-spring",
+    "name": "Silver Spring",
+    "city": "Washington",
+    "newKey": "washington-silver-spring",
+    "evidence": "Existing stations/washington-silver-spring"
+  },
+  {
+    "oldKey": "sokol",
+    "name": "Sokol",
+    "city": "Moscow",
+    "newKey": "moscow-sokol",
+    "evidence": "https://en.wikipedia.org/wiki/Sokol_(Moscow_Metro)"
+  },
+  {
+    "oldKey": "trece-de-noviembre",
+    "name": "Trece de Noviembre",
+    "city": "Medellín",
+    "newKey": "medellin-trece-de-noviembre",
+    "evidence": "https://es.wikipedia.org/wiki/Estaci%C3%B3n_Trece_de_Noviembre_(Metrocable_de_Medell%C3%ADn)"
+  },
+  {
+    "oldKey": "tricolore",
+    "name": "Tricolore",
+    "city": "Milan",
+    "newKey": "milan-tricolore",
+    "evidence": "Existing station city"
+  },
+  {
+    "oldKey": "trois-couleurs",
+    "name": "Trois Couleurs",
+    "city": "Brussels",
+    "newKey": "brussels-trois-couleurs",
+    "evidence": "https://en.wikipedia.org/wiki/Brussels_tram_route_44"
+  },
+  {
+    "oldKey": "vauxhall",
+    "name": "Vauxhall",
+    "city": "London",
+    "newKey": "london-vauxhall",
+    "evidence": "https://en.wikipedia.org/wiki/Vauxhall_station"
+  },
+  {
+    "oldKey": "white-city",
+    "name": "White City",
+    "city": "London",
+    "newKey": "london-white-city",
+    "evidence": "https://en.wikipedia.org/wiki/White_City_tube_station"
+  },
+  {
+    "oldKey": "white-flint",
+    "name": "White Flint",
+    "city": "Washington",
+    "newKey": "washington-white-flint",
+    "evidence": "https://en.wikipedia.org/wiki/North_Bethesda_station"
+  },
+  {
+    "oldKey": "whitechapel",
+    "name": "Whitechapel",
+    "city": "London",
+    "newKey": "london-whitechapel",
+    "evidence": "Existing stations/london-whitechapel"
+  },
+  {
+    "oldKey": "willesden-green",
+    "name": "Willesden Green",
+    "city": "London",
+    "newKey": "london-willesden-green",
+    "evidence": "Existing stations/london-willesden-green"
+  },
+  {
+    "oldKey": "wood-green",
+    "name": "Wood Green",
+    "city": "London",
+    "newKey": "london-wood-green",
+    "evidence": "https://en.wikipedia.org/wiki/Wood_Green_tube_station"
+  },
+  {
+    "oldKey": "zoologischer-garten",
+    "name": "Zoologischer Garten",
+    "city": "Berlin",
+    "newKey": "berlin-zoologischer-garten",
+    "evidence": "https://en.wikipedia.org/wiki/Berlin_Zoologischer_Garten_station"
+  },
+  {
+    "oldKey": "zwaantjes",
+    "name": "Zwaantjes",
+    "city": "Antwerp",
+    "newKey": "antwerp-zwaantjes",
+    "evidence": "https://en.wikipedia.org/wiki/Antwerp_tram_route_4"
+  }
+]
